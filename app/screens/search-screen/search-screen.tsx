@@ -82,7 +82,7 @@ export const SearchScreen = observer(function SearchScreen() {
       <Text style={NAME}>Weather App</Text>
       <Image source={require('../../../assets/weathericon.png')} style={LOGO} />
       <TextInput 
-                    placeholder="Enter Country Name"
+                    placeholder="Enter Country Name eg.India"
                     placeholderTextColor="#666666"
                     style={[SEARCH,PLACEHOLDER]}
                     value= {countryName}

@@ -1,6 +1,6 @@
 import React,{ useState,useEffect} from "react"
 import { observer } from "mobx-react-lite"
-import { ViewStyle,Text,View,FlatList,TouchableOpacity ,TextStyle,Image,ImageStyle,ScrollView} from "react-native"
+import { ViewStyle,Text,View,FlatList,TouchableOpacity ,TextStyle,Image,ImageStyle,ScrollView, Alert} from "react-native"
 import { Screen, Header } from "../../components"
 import { useNavigation,useRoute } from "@react-navigation/native"
  import { useStores } from "../../models"
@@ -9,6 +9,7 @@ import { useNavigation,useRoute } from "@react-navigation/native"
 import { color } from "../../theme"
 import { Button } from "../../components"
 import SvgUri from 'react-native-svg-uri-reborn'
+import { iteratorSymbol } from "mobx/lib/internal"
 
 
 const ROOT: ViewStyle = {
@@ -78,8 +79,47 @@ export const OpeningScreen = observer(function OpeningScreen() {
   const { countryDetails,countryStore } = useStores();
   // OR
   
+  
   const route = useRoute();
   const navigation = useNavigation();
+  const renderItem =({item }) =>
+{
+  if(item.name === route.params.countryName)
+  {
+  return(
+  
+    <View key={item.name} style={COUNTRY_DETAILS}>
+    <Text style={COUNTRY_NAME}>
+        {item.name}
+    </Text>
+    <Text style={CAPITAL}>
+        Capital :{item.capital}
+    </Text>
+    <Text style={POPULATION}>
+
+      Population :  {item.population}
+    </Text>
+    <Text style={LATLANG}>
+        Location : [{item.latlng[0]},{item.latlng[1]}]
+    </Text>
+    <SvgUri 
+    width="200"
+    height="250"
+    style={FLAG}
+     source ={{ uri : item.flag ? item.flag : null}}
+     />
+    
+   
+    <Button onPress={()=> navigation.push('weather',{cityName : item.capital})} textStyle={BUTTON_TEXT} style={BUTTON} text='Capital Weather' />
+</View>
+  
+  )
+  }
+  else{
+    Alert.alert('No data found');
+  }
+
+};
   React.useEffect(() => {
      countryStore.getCountryDetails(route.params.countryName);
     
@@ -92,7 +132,12 @@ export const OpeningScreen = observer(function OpeningScreen() {
   // const navigation = useNavigation()
   return (
     <ScrollView style={ROOT}>
-      {countryStore.country.map(countrys => 
+       <FlatList
+        data={toJS(countryStore.country)}
+        renderItem={renderItem}
+        keyExtractor={item => item.name}
+      />
+      {/* {countryStore.country.map(countrys => 
       
    <View key={countrys.name} style={COUNTRY_DETAILS}>
           <Text style={COUNTRY_NAME}>
@@ -115,10 +160,10 @@ export const OpeningScreen = observer(function OpeningScreen() {
            source ={{ uri : countrys.flag ? countrys.flag : null}}
            />
           
-          {/* <Image style={FLAG} source={{ uri : 'https://restcountries.eu/data/ind.svg' }} /> */}
+         
           <Button onPress={()=> navigation.push('weather',{cityName : countrys.capital})} textStyle={BUTTON_TEXT} style={BUTTON} text='Capital Weather' />
       </View>
-      )}
+      )} */}
     
     </ScrollView>
   )
