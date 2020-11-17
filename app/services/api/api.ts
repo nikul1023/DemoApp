@@ -2,10 +2,12 @@ import { ApisauceInstance, create, ApiResponse } from "apisauce"
 import { getGeneralApiProblem } from "./api-problem"
 import { ApiConfig, DEFAULT_API_CONFIG } from "./api-config"
 import * as Types from "./api.types"
+import { CountrySnapshot } from "../../models"
 
 /**
  * Manages all requests to the API.
  */
+
 export class Api {
   /**
    * The underlying apisauce instance which performs the requests.
@@ -44,12 +46,13 @@ export class Api {
     })
   }
 
+ 
   /**
    * Gets a list of users.
    */
-  async getUsers(): Promise<Types.GetUsersResult> {
+  async getCountryDetails(cname : string): Promise<Types.GetCountryResults> {
     // make the api call
-    const response: ApiResponse<any> = await this.apisauce.get(`/users`)
+    const response: ApiResponse<any> = await this.apisauce.get(`${cname}`,{amount :1})
 
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -57,19 +60,39 @@ export class Api {
       if (problem) return problem
     }
 
-    const convertUser = raw => {
+    // const convertCountry = raw => {
+    //   return {
+    //     name: raw.name,
+    //     capital: raw.capital,
+    //     population : raw.population,
+    //     lating : raw.lating,
+    //     flag : raw.flag,
+    //   }
+    // }
+    const convertCountry = (raw: any): CountrySnapshot => {
+   
       return {
-        id: raw.id,
-        name: raw.name,
+       name : raw.name,
+       capital : raw.capital,
+       population :raw.population,
+       latlng : raw.latlng,
+        flag : raw.flag,
       }
     }
-
     // transform the data into the format we are expecting
     try {
-      const rawUsers = response.data
-      const resultUsers: Types.User[] = rawUsers.map(convertUser)
-      return { kind: "ok", users: resultUsers }
-    } catch {
+      // const rawUsers = response.data
+      
+      const rawCountry = response.data
+      const convertedCountry: CountrySnapshot[] = rawCountry.map(convertCountry)
+      // const resultCountries : Types.Country = {
+      //   name : convertedCountry.name,
+      //   capital :response.data.capital,
+
+      // }
+      return { kind: "ok", countrys : convertedCountry}
+    } catch(e) {
+      __DEV__ && console.tron.log(e.message)
       return { kind: "bad-data" }
     }
   }

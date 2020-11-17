@@ -1,11 +1,13 @@
+import { CountryStoreModel } from "../country-store/country-store"
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
-
+import { CountryModel } from '../../models/country/country';
 /**
  * A RootStore model.
  */
 // prettier-ignore
 export const RootStoreModel = types.model("RootStore").props({
-
+  countryStore: types.optional(CountryStoreModel, {}),
+    countryDetails: types.optional(CountryModel, {}),
 })
 
 /**
