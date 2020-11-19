@@ -14,7 +14,7 @@ api.setup();
 export const CountryStoreModel = types
   .model("CountryStore")
   .props({
-     country: types.optional(types.array(CountryModel), [])
+     countrys: types.optional(types.array(CountryModel), [])
     //country : types.optional(types.frozen(),null)
   })
   .extend(withEnvironment)
@@ -22,13 +22,14 @@ export const CountryStoreModel = types
   .actions(self => ({
     saveCountry: (coutrySnapshots: CountrySnapshot[]) => {
       const countryModels: Country[] = coutrySnapshots.map(c => CountryModel.create(c)) // create model instances from the plain objects
-      self.country.replace(countryModels) // Replace the existing data with the new data
+      self.countrys.replace(countryModels) // Replace the existing data with the new data
     },
   }))
   .actions(self => ({
 
     getCountryDetails: flow(function* (name:string) {
-      const result =yield self.environment.api.getCountryDetails(name);
+      
+      const result =yield api.getCountryDetails(name);
       if(result.kind === "ok") {
          self.saveCountry(result.countrys);
       } else {

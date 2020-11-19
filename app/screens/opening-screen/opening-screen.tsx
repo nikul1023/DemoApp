@@ -8,15 +8,15 @@ import { useNavigation,useRoute } from "@react-navigation/native"
  import { Api } from '../../services/api'
 import { color } from "../../theme"
 import { Button } from "../../components"
-import SvgUri from 'react-native-svg-uri-reborn'
+import {SvgUri} from 'react-native-svg'
 import { iteratorSymbol } from "mobx/lib/internal"
-
+import AsyncStorage from "@react-native-community/async-storage"
+import axios from 'axios'
 
 const ROOT: ViewStyle = {
   backgroundColor: 'white',
   flex: 1,
-  // height:500,
-  // width:500
+ 
 }
 const COUNTRY_DETAILS: ViewStyle = {
   backgroundColor: '#71aee3',
@@ -55,10 +55,7 @@ const LATLANG : TextStyle ={
 const FLAG: ImageStyle = {
  
   flex: 1,
-  // height:100,
-  // width:100,
-  //  marginTop:20,
-  //  marginBottom:20,
+  
 }
 const BUTTON : ViewStyle ={
   backgroundColor:'blue',
@@ -74,96 +71,81 @@ const BUTTON_TEXT : TextStyle ={
   
 
 
-export const OpeningScreen = observer(function OpeningScreen() {
+export const OpeningScreen = observer(function OpeningScreen(this:any) {
   // Pull in one of our MST stores
-  const { countryDetails,countryStore } = useStores();
-  // OR
-  
+
   
   const route = useRoute();
+  const capitalName = route.params.countryDetail.capital;
+  
+  //console.warn(route.params.countryDetail);
   const navigation = useNavigation();
-  const renderItem =({item }) =>
-{
-  if(item.name === route.params.countryName)
-  {
-  return(
   
-    <View key={item.name} style={COUNTRY_DETAILS}>
-    <Text style={COUNTRY_NAME}>
-        {item.name}
-    </Text>
-    <Text style={CAPITAL}>
-        Capital :{item.capital}
-    </Text>
-    <Text style={POPULATION}>
 
-      Population :  {item.population}
-    </Text>
-    <Text style={LATLANG}>
-        Location : [{item.latlng[0]},{item.latlng[1]}]
-    </Text>
-    <SvgUri 
-    width="200"
-    height="250"
-    style={FLAG}
-     source ={{ uri : item.flag ? item.flag : null}}
-     />
-    
    
-    <Button onPress={()=> navigation.push('weather',{cityName : item.capital})} textStyle={BUTTON_TEXT} style={BUTTON} text='Capital Weather' />
-</View>
-  
-  )
-  }
-  else{
-    Alert.alert('No data found');
-  }
 
-};
-  React.useEffect(() => {
-     countryStore.getCountryDetails(route.params.countryName);
+// const [weatherinfo,setweatherinfo] = useState({
+//   name : '',
+//   temp :'',
+//   icon : '',
+//   windspeed :'',
+//   precip :'',
+// })
+
+ 
+const { weatherStore }  = useStores();
+   async function getCapitalWeather(){
+
+    await weatherStore.getWeatherDetails(capitalName);
     
-  },[route.params.countryName])
-  // const rootStore = useStores()
-  //setData(toJS(countryDetails.country))
-  //console.warn(countryStore.country);
- console.log(countryStore.country);
-  // Pull in navigation via hook
-  // const navigation = useNavigation()
+   const weatherInfo = weatherStore.weatherinfo;
+   if(weatherInfo === null)
+   {
+     Alert.alert("No data");
+   }
+   else{
+    
+     navigation.push('weather',{
+        cname: capitalName,
+        temp : weatherInfo.temperature,
+        windspeed : weatherInfo.wind_speed,
+        icon : weatherInfo.weather_icons[0],
+        precip : weatherInfo.precip,
+    })
+   }
+   
+  }
   return (
     <ScrollView style={ROOT}>
-       <FlatList
-        data={toJS(countryStore.country)}
-        renderItem={renderItem}
-        keyExtractor={item => item.name}
-      />
-      {/* {countryStore.country.map(countrys => 
+       
+     
       
-   <View key={countrys.name} style={COUNTRY_DETAILS}>
+   <View  style={COUNTRY_DETAILS}>
           <Text style={COUNTRY_NAME}>
-              {countrys.name}
+              {route.params.countryDetail.name}
           </Text>
           <Text style={CAPITAL}>
-              Capital :{countrys.capital}
+              Capital :{route.params.countryDetail.capital}
           </Text>
           <Text style={POPULATION}>
 
-            Population :  {countrys.population}
+            Population :  {route.params.countryDetail.population}
           </Text>
           <Text style={LATLANG}>
-              Location : [{countrys.latlng[0]},{countrys.latlng[1]}]
+              Location : [{route.params.countryDetail.latlng[0]},{route.params.countryDetail.latlng[1]}]
           </Text>
-          <SvgUri 
+          <View>
+          <SvgUri
           width="200"
           height="250"
           style={FLAG}
-           source ={{ uri : countrys.flag ? countrys.flag : null}}
+           uri ={ route.params.countryDetail.flag ? route.params.countryDetail.flag : null}
            />
           
-         
-          <Button onPress={()=> navigation.push('weather',{cityName : countrys.capital})} textStyle={BUTTON_TEXT} style={BUTTON} text='Capital Weather' />
+          </View>
+          <Button onPress={() => {getCapitalWeather()}} textStyle={BUTTON_TEXT} style={BUTTON} text='Capital Weather' />
       </View>
-      )} */}
+      
     
     </ScrollView>
   )

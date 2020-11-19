@@ -6,7 +6,8 @@ import { Screen, Text } from "../../components"
 // import { useStores } from "../../models"
 import { color } from "../../theme"
 import { NavigationContainer } from "@react-navigation/native"
-
+import { useStores } from "../../models"
+import AsyncStorage from "@react-native-community/async-storage"
 const ROOT: ViewStyle = {
   backgroundColor: '#448ee4',
   flex: 1,
@@ -53,19 +54,51 @@ export const SearchScreen = observer(function SearchScreen() {
   // Pull in one of our MST stores
   // const { someStore, anotherStore } = useStores()
   // OR
-  // const rootStore = useStores()
-  const handleSearch =() => {
-      if(isValid)
-      {
-        navigation.navigate('opening',{countryName:countryName});
-      }
-      else{
-        Alert.alert('Please enter country name');
-      }
-  }
+  const [countryDetail,setCountryDetail] = useState({
+      name :'',
+      capital :'',
+      population :0,
+      latlang :[],
+      flag :''
+  });
   const navigation = useNavigation();
   const [isValid,setIsValid] = useState(false);
-   const [countryName,setCountryName] = useState(null);
+   const [countryName,setCountryName] = useState<string>('');
+  const rootStore = useStores();
+  
+ async function handleSearch (countryName)  {
+   
+     if(isValid){
+    
+       
+      await rootStore.countryStore.getCountryDetails(countryName);
+       
+      //console.warn(rootStore.countryStore.countrys);
+       const countryArray = rootStore.countryStore.countrys.filter((item) => item.name === countryName);
+    
+      
+      if(countryArray.length === 0)
+      {
+        Alert.alert('No data found');
+        
+        
+      }
+      else{
+        navigation.push('opening',{countryDetail:{
+          name : countryArray[0].name,
+          capital : countryArray[0].capital,
+          population : countryArray[0].population,
+          latlng : countryArray[0].latlng,
+          flag : countryArray[0].flag,
+        }});
+      }
+    }
+    else
+    {
+      Alert.alert('Please enter country name');
+    }
+  }
+
    const textInputChange = (val) => {
     if( val.trim().length > 0 ) {
        setCountryName(val);
@@ -90,17 +123,11 @@ export const SearchScreen = observer(function SearchScreen() {
                     onChangeText={(val) => textInputChange(val)}
                     //onEndEditing={(e)=>handleValidUser(e.nativeEvent.text)}
                 />
-              {/* {isValid === true ?
-              ( */}
-                <TouchableOpacity onPress={()=>handleSearch()} style={SEARCH_BUTTON}>
+              
+                <TouchableOpacity onPress={()=>{handleSearch(countryName)}} style={SEARCH_BUTTON}>
                   <Text style={{color:'white',fontSize:30}}>Search</Text>
                 </TouchableOpacity>
-              {/* )
-              :
-              <TouchableOpacity style={SEARCH_BUTTON}>
-                  <Text>Search</Text>
-                </TouchableOpacity>
-              } */}
+              
 
     </View>
   )

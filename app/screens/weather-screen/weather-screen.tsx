@@ -32,71 +32,21 @@ const TEXT : TextStyle ={
 
 export const WeatherScreen = observer(function WeatherScreen(this: any) {
   
-  const [weatherinfo,setweatherinfo] = useState({
-    temp :'',
-    icon :'',
-    windspeed :'',
-    precip :'',
-  })
-  const [isLoading,setIsLoading] = useState(true);
-  // const [temperature,setTemperature] = useState('');
-  // const [icon,setIcon] = useState('');
-  // const [windspeed,setWindspeed] = useState('');
-  // const [precip,setPrecip] = useState<string>('');
   
-  const route = useRoute();
-  const capitalName = route.params.cityName;
-  useEffect(() => {
-   async function cityWeather(){
-
-    const key = 'ca947a0e9971c7024935ad53a2cdc983';
  
-    try{
-      let response=await fetch(`http:/api.weatherstack.com/current?access_key=${key}&query=${capitalName}`);
-    
-          if(!response.ok){
-              throw new Error('Error status: '+response.status);
-          }
-          else{
-            const data=await response.json();
-           
-            setweatherinfo({
-              ...weatherinfo,
-              temp : data.current.temperature ,
-              icon : data.current.weather_icons[0],
-              windspeed : data.current.wind_speed,
-              precip : data.current.precip,
-            })
-            setIsLoading(false);
-            //   setTemperature(data.current.temperature);
-            //  setIcon(data.current.weather_icons[0]);
-            //  setWindspeed(data.current.wind_speed)
-            //   setPrecip(data.current.precip);
-              //console.log(data.current.weather_icons[0]);
-            }    
-          }
-          catch(e){
-          // Alert.alert("error"+e.message+"please connect to internet",[{text:"ok"}]);
-          }
-          }
-            
-            cityWeather();
-            },
-            [capitalName])
-  // Pull in navigation via hook
-  // const navigation = useNavigation()
+  const route = useRoute();
+  
+  
   return (
     
     <View style={ROOT} >
-      { isLoading ? <ActivityIndicator /> :(
-        <>
-      <Text style={NAME}>{route.params.cityName}</Text>
-      <Text style={TEXT}>Temperature :{weatherinfo.temp} c</Text>
-      <Text style={TEXT}>Wind Speed : {weatherinfo.windspeed} km/h</Text>
-      <Text style={TEXT}>Precip : {weatherinfo.precip}</Text>
-      <Image style={ICON} source={{ uri : weatherinfo.icon ? weatherinfo.icon : null}} />
-      </>
-      )}
+   
+      <Text style={NAME}>{route.params.cname}</Text>
+      <Text style={TEXT}>Temperature :{route.params.temp} c</Text>
+      <Text style={TEXT}>Wind Speed : {route.params.windspeed} km/h</Text>
+      <Text style={TEXT}>Precip : {route.params.precip}</Text>
+      <Image style={ICON} source={{ uri : route.params.icon }} />
+    
     </View>
   )
 })
